@@ -1,0 +1,41 @@
+name: Terraform Prod Deploy
+
+on:
+  workflow_dispatch:   # manual trigger (BEST PRACTICE)
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: binitbaral/application-code
+          path: app
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/974490845585/locations/global/workloadIdentityPools/github-pool2/providers/github-provider
+          service_account: github-actions-deployer@hopeful-list-446012-q4.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - run: |
+          docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/weather-app/weather:latest ./app
+          docker push us-central1-docker.pkg.dev/$PROJECT_ID/weather-app/weather:latest
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - run: terraform init -input=false
+        working-directory: environments/prod
+
+      - run: terraform apply -auto-approve -input=false
+        working-directory: environments/prod

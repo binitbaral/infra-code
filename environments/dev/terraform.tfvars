@@ -1,0 +1,5 @@
+project_id   = "hopeful-list-446012-q4"
+region       = "us-central1"
+service_name = "weather-app-dev"
+image_uri    = "us-central1-docker.pkg.dev/hopeful-list-446012-q4/weather-app/weather:latest"
+openweather_secret_name = "openweather-api-key"
